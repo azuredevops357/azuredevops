@@ -1,0 +1,58 @@
+trigger:
+ main
+
+pool: 
+   name: Azure Pipeline
+   vmImage: 'vs2017-win2016'
+
+variables:
+- name: azure_service_connection
+  value: azure-subscription1
+- name: storage_resource_group
+  value: demotest1
+- name:  storage_region
+  value: East US
+- name: storage_account
+  value: demostate
+- name: storage_container_name
+  value: tstate
+- name: state_file
+  value: test_statefile
+- name:  statefile
+  value: demostatefile
+- name: resource_group
+  value: ${{ parameters.resource_group }}
+- name: rg_location
+  value: ${{ parameters.rg_location}}
+
+parameters:
+- name: resource_group
+  default: azure
+- name: rg_location
+  default: East US
+
+
+steps:
+- task: Terraform-template
+  displayName: 'Use Terraform latest'
+ 
+- task: demo.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
+  displayName: 'Terraform : INIT'
+  inputs:
+    backendServiceArm: 'azure-subscription1'
+    backendAzureRmResourceGroupName: 'demotest1'
+    backendAzureRmStorageAccountName: demotstate
+    backendAzureRmContainerName: tstate
+    backendAzureRmKey: '77Q4LUB5o9wRdbPYDt+0kGZP+L8Sj9E/FNXg7lZBQuWjkan4wA19CR1SmlqIRUFQfhuQrPVaGzNhjGw=='
+ 
+- task: demo.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
+  displayName: 'Terraform : PLAN'
+  inputs:
+    command: plan
+    environmentServiceNameAzureRM: 'azure-subscription1'
+ 
+- task: demo.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
+  displayName: 'Terraform : VAL & APPLY'
+  inputs:
+    command: apply
+    environmentServiceNameAzureRM: 'azure-subscription1'
